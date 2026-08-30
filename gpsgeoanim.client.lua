@@ -861,6 +861,22 @@ RegisterCommand('geoanim', function(_, args)
     end
 end, false)
 
+--[[
+ コマンド候補の登録。
+
+ /geoanim は常に登録されるが、演出自体が既定で無効 (gpsgeoanim.config.lua の
+ enabled = false) なので、無効なときは候補に出さない。
+ 使えない機能を候補に並べても混乱するだけのため。
+]]
+if (L2KGpsGeoAnimConfig or {}).enabled ~= false then
+    CreateThread(function()
+        Wait(1000)
+        TriggerEvent('chat:addSuggestion', '/geoanim', KnGps3dL('suggest.geoanim'), {
+            { name = 'action', help = KnGps3dL('suggest.geoanimArg') },
+        })
+    end)
+end
+
 RegisterNetEvent('l2k_geoanim:client:startInstall', function(vehicleNetId, options)
     local vehicle = vehicleNetId and NetToVeh(vehicleNetId) or 0
     startInstall(vehicle, options)

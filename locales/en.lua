@@ -28,6 +28,21 @@ KnGps3dLocales['en'] = {
     ['notify.none'] = 'none',
     ['notify.unknown'] = 'unknown',
 
+    -- Chat command suggestions (shown when typing /)
+    ['suggest.gps3d'] = 'Toggle the 3D GPS display',
+    ['suggest.route'] = 'Switch the route source',
+    ['suggest.routeArg'] = 'manual | blip | toggle | status',
+    ['suggest.preset'] = 'Change the ribbon appearance preset',
+    ['suggest.presetArg'] = 'index | next | prev | status',
+    ['suggest.colorDefault'] = 'Change the user route colour',
+    ['suggest.colorMission'] = 'Change the mission route colour',
+    ['suggest.colorArg'] = '0-255',
+    ['suggest.colorArgAlpha'] = '0-255 (optional)',
+    ['suggest.beacon'] = 'Toggle the floating waypoint beacon',
+    ['suggest.edit'] = 'Open the GPS settings panel',
+    ['suggest.geoanim'] = 'Play the AR startup animation',
+    ['suggest.geoanimArg'] = 'on | off | shutdown | toggle',
+
     -- World text (drawn with DrawText: ASCII only)
     ['hud.modeUser'] = 'GPS MODE: USER',
     ['hud.modeMission'] = 'GPS MODE: MISSION',

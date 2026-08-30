@@ -2877,6 +2877,35 @@ AddEventHandler('onResourceStop', function(resourceName)
     applyGpsRoutingConfig(false)
 end)
 
+--[[
+ チャットのコマンド候補を登録する。
+
+ chat リソースより先に起動していると登録が失われるため、少し待ってから行う。
+ 引数を持つコマンドは help を付けないと「打てるが使い方が分からない」状態になる。
+]]
+CreateThread(function()
+    Wait(1000)
+
+    TriggerEvent('chat:addSuggestion', '/gps3d', L('suggest.gps3d'))
+
+    TriggerEvent('chat:addSuggestion', '/gps3d_route', L('suggest.route'), {
+        { name = 'action', help = L('suggest.routeArg') },
+    })
+
+    TriggerEvent('chat:addSuggestion', '/gpspreset', L('suggest.preset'), {
+        { name = 'preset', help = L('suggest.presetArg') },
+    })
+
+    local colorArgs = {
+        { name = 'r', help = L('suggest.colorArg') },
+        { name = 'g', help = L('suggest.colorArg') },
+        { name = 'b', help = L('suggest.colorArg') },
+        { name = 'a', help = L('suggest.colorArgAlpha') },
+    }
+    TriggerEvent('chat:addSuggestion', '/gpscolordefault', L('suggest.colorDefault'), colorArgs)
+    TriggerEvent('chat:addSuggestion', '/gpscolormission', L('suggest.colorMission'), colorArgs)
+end)
+
 CreateThread(function()
     Wait(1000)
 

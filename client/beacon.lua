@@ -1207,6 +1207,11 @@ RegisterCommand('gps3dbeacon', function()
     })
 end, false)
 
+CreateThread(function()
+    Wait(1000)
+    TriggerEvent('chat:addSuggestion', '/gps3dbeacon', KnGps3dL('suggest.beacon'))
+end)
+
 exports('SetBeaconEnabled', function(enabled)
     beaconState.enabled = enabled == true
     return beaconState.enabled

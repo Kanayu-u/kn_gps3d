@@ -5,7 +5,7 @@ lua54 'yes'
 
 author 'Kanayu_u'
 description '3D GPS ribbon renderer with floating waypoint beacon (based on l2k_gps3d by Lafa2K + Codex).'
-version '2.5.3'
+version '2.6.0'
 
 shared_scripts {
     'config/config.lua',

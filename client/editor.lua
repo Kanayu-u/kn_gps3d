@@ -832,6 +832,12 @@ if EditorConfig.enabled ~= false then
             'keyboard', EditorConfig.keyMappingDefault or '')
     end
 
+    -- コマンド名は EditorConfig.commandName で変更できるので、候補もそれに追従させる
+    CreateThread(function()
+        Wait(1000)
+        TriggerEvent('chat:addSuggestion', '/' .. commandName, KnGps3dL('suggest.edit'))
+    end)
+
     CreateThread(function()
         --[[
          プレイヤーが読み込まれる前に復元するとルート再構築が空振りするため、

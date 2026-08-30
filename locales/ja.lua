@@ -38,6 +38,21 @@ KnGps3dLocales['ja'] = {
     ['notify.none'] = 'なし',
     ['notify.unknown'] = '不明',
 
+    -- チャットのコマンド候補 (/ 入力時のサジェスト)
+    ['suggest.gps3d'] = '3D GPS の表示を切り替える',
+    ['suggest.route'] = 'ルートの取得元を切り替える',
+    ['suggest.routeArg'] = 'manual | blip | toggle | status',
+    ['suggest.preset'] = 'リボンの見た目プリセットを変更する',
+    ['suggest.presetArg'] = '番号 | next | prev | status',
+    ['suggest.colorDefault'] = 'ユーザールートの色を変更する',
+    ['suggest.colorMission'] = 'ミッションルートの色を変更する',
+    ['suggest.colorArg'] = '0-255',
+    ['suggest.colorArgAlpha'] = '0-255 (省略可)',
+    ['suggest.beacon'] = '目的地の空中ビーコンを切り替える',
+    ['suggest.edit'] = 'GPS 設定パネルを開く',
+    ['suggest.geoanim'] = 'AR 起動演出を再生する',
+    ['suggest.geoanimArg'] = 'on | off | shutdown | toggle',
+
     -- ワールド内テキスト (ASCII 固定)
     ['hud.modeUser'] = 'GPS MODE: USER',
     ['hud.modeMission'] = 'GPS MODE: MISSION',

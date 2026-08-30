@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.6.0] - 2026-08-30
+
+### Added
+
+- **全コマンドをチャットのコマンド候補 (`chat:addSuggestion`) に登録した。**
+  これまで 1 件も登録しておらず、`/` を打ってもコマンドが候補に出なかった。
+  そのため `/gpspreset status` / `next` / `prev` のようなサブコマンドは
+  README を読まない限り存在に気づけなかった。実機検証で指摘されて判明。
+  引数を取るコマンドには引数名と説明 (help) も付けている。
+  対象: `/gps3d` `/gps3d_route` `/gpspreset` `/gpscolordefault`
+  `/gpscolormission` `/gps3dbeacon` `/gpsedit`
+- ロケールに `suggest.*` を追加 (ja / en)。
+- `/geoanim` は演出が既定で無効 (`gpsgeoanim.config.lua` の `enabled = false`) のため、
+  **有効なときだけ候補に出す**。使えない機能を候補に並べても混乱するだけなので。
+
+### Notes
+
+- 候補の登録は chat リソースの起動待ちのため 1 秒遅延させている。
+  chat より先に起動していると登録が失われるため。
+- `/gpsedit` の候補は `EditorConfig.commandName` に追従する。
+
 ## [2.5.3] - 2026-08-28
 
 ### Changed

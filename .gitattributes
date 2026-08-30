@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# バイナリ素材は改行変換の対象外にする
+*.ytd  binary
+*.awc  binary
+*.rel  binary
+*.png  binary

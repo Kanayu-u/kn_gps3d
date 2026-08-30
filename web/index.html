@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kn_gps3d settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="panel" class="panel hidden" role="dialog" aria-modal="true">
+        <header class="panel-head">
+            <div class="panel-titles">
+                <h1 id="title">GPS</h1>
+                <p id="subtitle"></p>
+            </div>
+            <button id="close" class="icon-btn" type="button" aria-label="close">&times;</button>
+        </header>
+
+        <div id="body" class="panel-body"></div>
+
+        <footer class="panel-foot">
+            <span id="status" class="status"></span>
+            <button id="reset-all" class="ghost-btn" type="button"></button>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

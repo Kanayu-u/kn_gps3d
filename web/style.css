@@ -1,0 +1,577 @@
+/* ==========================================================================
+   kn_gps3d / /gpsedit パネル
+
+   ゲーム画面の上に重ねるため、パネル以外は完全に透明でクリックも透過させる。
+   ルートを見ながら調整できるよう左端に寄せ、幅は固定・高さは可変にする。
+   ========================================================================== */
+
+:root {
+    --bg: rgba(18, 20, 26, 0.94);
+    --bg-raised: rgba(255, 255, 255, 0.05);
+    --bg-raised-hover: rgba(255, 255, 255, 0.09);
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #f2f4f8;
+    --text-dim: #9aa3b2;
+    --accent: #4d9fff;
+    --radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ button / input は font-family を継承しないため、指定しないと本文だけ Segoe UI で
+ ボタン類だけブラウザ既定フォントになり、字面がちぐはぐになる。
+*/
+button,
+input,
+select {
+    font: inherit;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+    /* パネル外はゲームへクリックを通す */
+    pointer-events: none;
+    font-family: "Segoe UI", "Yu Gothic UI", "Noto Sans JP", system-ui, sans-serif;
+    color: var(--text);
+    user-select: none;
+}
+
+/*
+ 【重要】backdrop-filter は使わない。
+ NUI のページは背景が透明でゲーム画面に重ねて合成されるが、backdrop-filter は
+ ページの裏側 (= 透明) しか参照できないため、ゲーム画面はぼけない。そのうえ
+ CEF では合成レイヤー全体が不透明な黒として焼かれ、パネルの周囲 (box-shadow の
+ ぼかし範囲ぶん) が真っ黒な四角になる。
+*/
+.panel {
+    pointer-events: auto;
+    position: absolute;
+    top: 4vh;
+    left: 3vh;
+    width: 348px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    /* スクロールバー・中身を角丸で切る */
+    overflow: hidden;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.panel.hidden {
+    opacity: 0;
+    transform: translateX(-24px);
+    pointer-events: none;
+}
+
+/* ---------- head / foot ---------- */
+
+.panel-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 20px 14px;
+}
+
+.panel-titles h1 {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.panel-titles p {
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.icon-btn {
+    margin-left: auto;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--bg-raised);
+    color: var(--text-dim);
+    font-size: 19px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.icon-btn:hover {
+    background: var(--bg-raised-hover);
+    color: var(--text);
+}
+
+.panel-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 20px 12px;
+}
+
+.panel-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 3px;
+}
+
+.panel-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.panel-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px 18px;
+    border-top: 1px solid var(--line);
+}
+
+.status {
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.status.show {
+    opacity: 1;
+}
+
+.ghost-btn {
+    margin-left: auto;
+    padding: 7px 13px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.ghost-btn:hover {
+    background: var(--bg-raised);
+    color: var(--text);
+}
+
+.ghost-btn.armed {
+    border-color: rgba(255, 96, 96, 0.55);
+    color: #ff8080;
+}
+
+/* ---------- section ---------- */
+
+.section {
+    padding: 14px 0 6px;
+}
+
+.section:last-child {
+    padding-bottom: 2px;
+}
+
+.section + .section {
+    border-top: 1px solid var(--line);
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.field {
+    padding: 8px 0;
+}
+
+.field-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+}
+
+/*
+ ラベルに余白を全部持たせることで、後続の要素 (値 / スイッチ / リセット) が
+ 常に右端へそろう。個々に margin-left:auto を付けると、コントロールが無い行
+ (選択肢・プリセット・色) でリセットボタンがラベルの直後に来てしまう。
+*/
+.field-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.field-value {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+}
+
+.reset-btn {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--accent);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.reset-btn.show {
+    visibility: visible;
+}
+
+.reset-btn:hover {
+    background: var(--bg-raised);
+}
+
+/* ---------- toggle ---------- */
+
+.switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+    border: 0;
+    background: rgba(255, 255, 255, 0.16);
+    cursor: pointer;
+    transition: background 0.16s ease;
+}
+
+.switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.16s ease;
+}
+
+.switch.on {
+    background: var(--accent);
+}
+
+.switch.on::after {
+    transform: translateX(18px);
+}
+
+/* ---------- slider ---------- */
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    margin-top: 10px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.16);
+    outline: none;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+/* ---------- choice ---------- */
+
+.choice {
+    display: flex;
+    gap: 4px;
+    margin-top: 9px;
+    padding: 3px;
+    border-radius: 10px;
+    background: var(--bg-raised);
+}
+
+.choice button {
+    flex: 1 1 0;
+    padding: 6px 4px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.choice button.on {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text);
+}
+
+/* ---------- preset picker ----------
+
+   ネイティブの <select> は開いた一覧が OS 描画になり、テーマも当たらず
+   「使用中のもの」を強調できない。一覧をインラインで開く自前実装にする。
+   (パネル本体がスクロールコンテナなので、浮かせるとクリップされる) */
+
+.picker {
+    margin-top: 9px;
+}
+
+.picker-current,
+.picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: var(--bg-raised);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.picker-current {
+    border-color: var(--line);
+}
+
+.picker-current:hover,
+.picker-item:hover {
+    background: var(--bg-raised-hover);
+}
+
+.picker-thumb {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.35);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.picker-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.picker-index {
+    flex: 0 0 auto;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+}
+
+.picker-caret {
+    flex: 0 0 auto;
+    color: var(--text-dim);
+    font-size: 10px;
+    transition: transform 0.14s ease;
+}
+
+.picker.open .picker-caret {
+    transform: rotate(180deg);
+}
+
+/*
+ 一覧自体はスクロールさせない。入れ子スクロールにすると、スクロールバーが
+ 角丸の内側にはみ出して見えるうえ、行が途中で切れる。外側 (.panel-body) の
+ スクロールに任せる。
+*/
+.picker-list {
+    display: none;
+    margin-top: 6px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.picker.open .picker-list {
+    display: block;
+}
+
+.picker-item {
+    position: relative;
+    background: transparent;
+    /* 使用中バーのぶんだけ左を空け、行がずれないようにする */
+    padding-left: 14px;
+    border-radius: 8px;
+}
+
+/* 使用中のプリセット */
+.picker-item.active {
+    background: rgba(77, 159, 255, 0.14);
+    color: var(--text);
+}
+
+.picker-item.active:hover {
+    background: rgba(77, 159, 255, 0.2);
+}
+
+/*
+ 左のアクセントバー。border-left で描くと border-radius の角で先細りして
+ バリのように見えるため、角に触れない独立した要素として描く。
+*/
+.picker-item.active::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    width: 3px;
+    height: 18px;
+    margin-top: -9px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.picker-item.active .picker-name {
+    font-weight: 600;
+}
+
+.picker-check {
+    flex: 0 0 auto;
+    color: var(--accent);
+    font-size: 12px;
+    visibility: hidden;
+}
+
+.picker-item.active .picker-check {
+    visibility: visible;
+}
+
+/* ---------- color ---------- */
+
+.color-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 9px;
+}
+
+.color-tabs button {
+    padding: 5px 9px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: var(--bg-raised);
+    color: var(--text-dim);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.color-tabs button.on {
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+.sv {
+    position: relative;
+    width: 100%;
+    height: 132px;
+    margin-top: 9px;
+    border-radius: 10px;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+/*
+ つまみは JS が calc() で「枠の内側だけを動く」座標を入れる。
+ 単純な % 配置だと端で半分 (7px) 枠からはみ出して、これがバリに見える。
+*/
+.sv-knob,
+.hue-knob {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+.hue {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    margin-top: 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    touch-action: none;
+    background: linear-gradient(to right,
+        #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+}
+
+.hue-knob {
+    top: 7px;
+}
+
+.alpha-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.alpha-row .slider {
+    margin-top: 0;
+}
+
+.swatch {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}

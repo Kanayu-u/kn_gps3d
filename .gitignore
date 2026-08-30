@@ -1,0 +1,7 @@
+# エディタ / OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# ランタイム生成物
+*.log
